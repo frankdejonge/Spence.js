@@ -66,7 +66,7 @@ var MySpence = new Spence({
 	 // Spence also handles versioning.
 	 version: '0.1-alpha'
 	 /**
-	  * Spence unlike localDatabases, localStorage
+	  * Unlike localDatabases, localStorage
 	  * doesn't handle versioning, but now it does.
 	  */
 });
