@@ -14,7 +14,7 @@ Spence has a familiar interface for talking with your app. So you'll feel right 
 
 First things first. Spence relies heavily on 2 libraries. Luckilly these are very common in your everyday web project already:
 
-### [jQUery](http://jquery.com) / [Zepto](http://zeptojs.com) / [Ender](http://ender.no.de)
+### [jQuery](http://jquery.com) / [Zepto](http://zeptojs.com) / [Ender](http://ender.no.de)
 
 For all the ajax calls, Spence needs to have one of these libraries. It realy doesn't matter which one because they all have a similar API.
 
