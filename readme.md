@@ -95,4 +95,8 @@ MySpence.get({
 });
 ```
 
+## What's to come?
+
+At least two more engines will come available to Spence (IndexedDB and Filesystem). So keep an eye out for changes in this repo.
+
 Easy as pie! Enjoy.
