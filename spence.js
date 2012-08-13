@@ -65,7 +65,8 @@
 		crossDomain: false,
 		requestTimeout: 0,
 		username: null,
-		password: null
+		password: null,
+		persistent: true
 	};
 
 	// Spence constructor
@@ -93,9 +94,9 @@
 
 	// Attach constructors to the engines.
 	var Engines = Spence.Engines = {
-		localStorage: function (){},
 		localDatabase: function (){},
-		indexedDB: function (){}
+		localStorage: function (){},
+		sessionStorage: function (){}
 	};
 
 	// define engine utils
@@ -240,8 +241,9 @@
 	for(var util in EngineUtils)
 	{
 		// attach configure functions
-		Engines.localStorage.prototype[util] = EngineUtils[util];
 		Engines.localDatabase.prototype[util] = EngineUtils[util];
+		Engines.localStorage.prototype[util] = EngineUtils[util];
+		Engines.sessionStorage.prototype[util] = EngineUtils[util];
 	}
 
 	// LocalStorage driver implementation.
@@ -316,6 +318,83 @@
 		remove: function (key)
 		{
 			root.localStorage.removeItem(key);
+
+			return this;
+		}
+	});
+	
+	// SessionStorage driver implementation.
+	_.extend(Engines.sessionStorage.prototype, {
+		// Test for localStorage
+		test: function ()
+		{
+			return _.has(root, 'sessionStorage');
+		},
+		// Store data in localStorage
+		set: function (key, val, options)
+		{
+			var tries = 0, stored = false;
+
+			// Try up to 5 times, database could be over size
+			while(tries < 5 && stored === false)
+			{
+				try
+				{
+					// Try to store the data.
+					root.sessionStorage.setItem(
+						this.prefixIdentifier(key),
+						this.encode(val, options.expiration)
+					);
+
+					// The data is now saved.
+					stored = true;
+
+					// Add the item to the fetchStack.
+					this.fetchStack.push(key);
+
+					// When the data is not the fetchStack
+					if (key !== this.options.fetchStack)
+					{
+						// Store the fetchStack
+						this.set(this.options.fetchStack, this.fetchStack, false);
+					}
+				}
+				// Saving the data failed.
+				catch(e)
+				{
+					// Retrieve the last item index.
+					var last = this.fetchStack.shift();
+
+					// Remove the last and try again.
+					this.remove(last);
+				}
+			}
+
+			if( ! stored)
+			{
+				throw new SpenceError('Could not store value of '+key+' into'.this.options.storagePrefix);
+			}
+		},
+		// Retrieve data from sessionStorage
+		get: function (key, options)
+		{
+			// Retrieve the item.
+			var item = root.sessionStorage.getItem(this.prefixIdentifier(key));
+
+			// When the item wan't found.
+			if( ! item)
+			{
+				// Return false to fall back to the API call.
+				return options.error();
+			}
+
+			// Decode the response
+			this.decode(item, options);
+		},
+		// Remove an item from sessionStorage
+		remove: function (key)
+		{
+			root.sessionStorage.removeItem(key);
 
 			return this;
 		}
@@ -406,7 +485,7 @@
 			{
 				if(result && result.rows && result.rows.length > 0)
 				{
-					this.decode(result.rows.item(0).payload, options)
+					this.decode(result.rows.item(0).payload, options);
 				}
 				else
 				{
@@ -446,7 +525,7 @@
 				success: options.success || function (){}
 			});
 		}
-	})
+	});
 
 	// Spence methods.
 	var fn = {
