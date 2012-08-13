@@ -593,7 +593,7 @@
 
 			val = options[val];
 
-			if(_.isfunction (val))
+			if(_.isFunction (val))
 			{
 				return val();
 			}
